@@ -137,7 +137,7 @@ characters on them before a single visible character.
 |---|---|---|
 | The marker on a `fixed` finding | carried the ending across runs so the finding was not re-found | the `Finding: <specialist>/<fingerprint>` commit trailer, read by key and compared whole |
 | The marker on an all-informational threadless item | carried the classification across runs | nothing — the item is reclassified from scratch, which costs one verification pass and cannot lose a fix, rebuttal or deferral, since none of those is informational |
-| "Zero findings carried while one of our summary comments exists" as a refusal | caught a summary whose markers we failed to read | `prior.sentinel`, whose absence is itself a refusal when a `SELF` top-level comment holds a JSON marker |
+| "Zero findings carried while one of our summary comments exists" as a refusal | caught a summary whose markers we failed to read | `prior.unparsed` for a marker that does not parse, and nothing for a marker the parser skips |
 | "Never the markers" in the cut order | kept the visible budget from eating durable state | nothing needs it — the visible cap no longer measures the trailer, so the cut order never reaches it |
 
 **The substring hazard is closed, and it took two passes.** Row one made the commit
@@ -166,18 +166,26 @@ the same conclusion `SKILL.md` reaches about its stacked-commit gate. The gap pr
 this change — it is recorded here because dropping row one left nothing else to contradict
 a forged trailer.
 
-**The sentinel refusal now needs a JSON marker, as `reference/intake.md` defines it**
-([#66]). The refusal in row three stopped a run on every `SELF` top-level comment when no
-sentinel parsed, a plain "Ready for review" included. The same text stopped a run on a
-top-level comment that holds only legacy markers, and this repo has ten of those. No run
-reproduced either stop. The alternative was a test on the bare text `review-agent:`. It
-lost because people here write about markers: two comments on PR #65 hold that text and no
-marker.
+**The sentinel refusal is gone too.** Row three first gave the job to a refusal: stop
+when a `SELF` top-level comment exists and no sentinel parsed. That refusal assumed every
+`SELF` top-level comment is our summary. The skill authenticates as a user, so the person
+who owns the token writes `SELF` comments too. Rule 3 of "Which markers count" in
+`reference/intake.md` makes each of them an item. In four test runs, a plain "Ready for
+review" from that person met both rules, and the model followed rule 3.
 
-**Nothing now catches a summary that lost every marker.** The old refusal stopped the run
-on it. The next run reads it as a comment of its author and makes it an item, at the tier
-of that author. Verification still decides each claim of that item on evidence. A test on
-the shape of the summary lost, because a person can write a `Coverage:` line too.
+**A narrower refusal lost.** It would stop only when a `SELF` top-level comment holds a
+JSON marker anywhere outside a quote or code. A JSON marker in the trailer that does not
+parse already reaches `prior.unparsed`. The narrower test would catch only two more cases. One is a
+summary from before the sentinel existed, and stopping on it is wrong. The other is a
+marker that a person moved out of the trailer, which rule 2 makes inert. The narrower test
+also needed a second definition of a marker beside rule 2.
+
+**Nothing now catches a summary whose markers the parser skipped.** The next run reads it
+as an item, at the tier of the token owner, and can post a second summary. The loss is
+smaller than a cold start. Thread replies carry their own markers, and fixed findings come
+from `Finding:` trailers. Only the summary holds the decisions on top-level comments,
+review bodies, the PR description, and findings that are not fixed. A test on the shape of
+the summary lost, because a person can write a `Coverage:` line too.
 
 [#11]: https://github.com/prelint/review-agent/issues/11
 [#13]: https://github.com/prelint/review-agent/issues/13
@@ -185,7 +193,6 @@ the shape of the summary lost, because a person can write a `Coverage:` line too
 [#18]: https://github.com/prelint/review-agent/issues/18
 [#23]: https://github.com/prelint/review-agent/issues/23
 [#26]: https://github.com/prelint/review-agent/issues/26
-[#66]: https://github.com/prelint/review-agent/issues/66
 
 ## Reading the changing review body
 

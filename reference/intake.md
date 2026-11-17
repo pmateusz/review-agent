@@ -298,10 +298,8 @@ Anything that fails these is not a parse failure. It is somebody else's text.
 The summary sentinel, `{"summary":true}`, restores no item and no finding. It sets
 `prior.sentinel`, and that is its whole job: it proves a `SELF` comment is the carrier
 written by this skill, including when every state marker was omitted because the state is
-recoverable or informational. Its absence is a refusal condition below only when a `SELF`
-top-level comment holds a JSON marker. That case is an exception to the rules above: the
-run stops, and the comment does not become an item. The sentinel is cheap so that its
-absence beside a JSON marker means something.
+recoverable or informational. Because it sits in the trailer, rule 3 never makes our
+summary an item.
 
 **The trailer, not the last line.** A summary can carry the sentinel, actionable
 threadless items and non-fixed findings — a dozen markers on a busy PR — and only one can
@@ -376,45 +374,23 @@ separately — `{"claims": 11, "findings": 9}` — so loss on one surface cannot
 the other's total. Zero carried findings is valid when all prior findings were fixed or
 none existed; fixed findings are recovered from `git log` after Stage 3 names them again.
 `prior.unparsed` holds marker lines that failed to parse. `prior.sentinel` is `true` when
-a summary sentinel was read, and it is what makes zero carried findings checkable: the
-condition that excuses the zero is "the sentinel parsed", so a run that does not store
-whether it parsed cannot apply it.
+a summary sentinel was read.
 
 **A marker that parses but says nothing this version knows is not `unparsed`.** Skip it
 and carry on. `unparsed` means the line would not parse at all; a well-formed payload
 carrying an unrecognised key is a marker from a version that knows more than this one, and
 halting on it would let any future addition stop every older copy still installed. This is
-what keeps the sentinel's shape free to grow now that a refusal reads it.
+what keeps the marker shape free to grow.
 
-**Four cases, and only two of them are ours:**
+**Three cases, and only one is a bug:**
 
-- **No marker read, and no `SELF` top-level comment that holds a JSON marker** is
-  `source: "none"`. The PR predates them, or we have not posted here. Treat it as a first
-  review. Do not call it a parse bug.
+- **No marker read** is `source: "none"`. The PR predates them, or we have not posted
+  here. Treat it as a first review. Do not call it a parse bug.
 - **Only legacy markers** is `source: "legacy"`. Read them, do not stop. See below.
-- **`unparsed` non-empty** is a parse bug. Stop and say so — see "Refusing to run". A run
-  that silently degrades to a cold start re-does every fix and re-replies in every thread,
-  and the one record of why dies with the gitignored ledger.
-- **A `SELF` top-level comment holds a JSON marker and `prior.sentinel` is false** is the
-  same parse bug, and it stops the run too. Our summary always carries the sentinel, so a
-  JSON marker with no sentinel is a trailer we failed to read. The marker formats in this
-  file fail silently: "the marker is neither read nor recorded as unparsed". That failure
-  leaves `unparsed` empty, so the first test alone lets the run continue. It
-  is also the worse failure, because classify step 1 then files our own summary as a
-  reviewer's item and the run answers itself.
+- **`unparsed` non-empty** is a parse bug. Stop and say so. See "Refusing to run".
 
-**A comment holds a JSON marker when an HTML comment in its body starts with
-`<!-- review-agent: {`.** Do not count a line that begins with `>`. Do not count text in a
-code span or a code block. This skill writes a marker in none of those places, so a marker
-there is a copy that a person made. The text `review-agent:` in prose is not a marker. A
-legacy marker has no `{` after the colon, so it never meets this test.
-
-A `SELF` top-level comment with no JSON marker and no legacy marker is not a parse bug.
-Classify step 1 makes it an item.
-
-`prior.sentinel` true with zero carried findings is not a parse bug. That is the state the
-summary is allowed to be in when every finding was fixed and every threadless item was
-informational.
+A `SELF` top-level comment with no marker in its trailer is not a parse bug, and neither
+is a missing sentinel. Classify step 1 makes that comment an item.
 
 ### The legacy marker
 
@@ -811,14 +787,8 @@ Stop and say so when:
   `reviews.jsonl` whose `author` is `SELF` and whose `commit_id` is `HEAD_SHA`. Nothing
   has changed; a second identical review is noise.
 - `gh` is unauthenticated, or the repo has no PR.
-- **The previous-run load found markers it could not read.** Either of two tests shows it:
-  `prior.unparsed` is non-empty, **or** a `SELF` top-level comment holds a JSON marker and
-  `prior.sentinel` is false. "What it records, and when that is a bug" defines when a
-  comment holds a JSON marker. Proceeding turns
-  a parse bug into a cold start that re-does every fix and re-replies in every thread, and
-  says nothing. The second test is the one that catches a silent loss: a marker the parser
-  skips never reaches `unparsed`, so the first test alone reads it as no history at all.
-  Zero carried findings with `prior.sentinel` true is not this — it is the valid state
-  where every finding was fixed and every threadless item informational.
+- **The previous-run load found markers it could not parse**, so `prior.unparsed` is
+  non-empty. If the run continues, it loses the decisions that those markers hold and
+  makes them again, and it does not say so.
 
 Do not invent work to justify the run.
