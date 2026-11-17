@@ -169,9 +169,10 @@ a forged trailer.
 **Nothing replaces the sentinel refusal.** It stopped a run when a `SELF` top-level comment
 existed and no sentinel parsed, to catch a summary whose markers the parser skipped. The
 skill authenticates as a user, so the comments of the token owner are `SELF` too. Rule 3 of
-"Which markers count" in `reference/intake.md` makes them items, so the refusal stopped on
-a plain "Ready for review" from that person. Now a summary whose markers the parser skipped
-becomes an item. The next run makes again the decisions that only that summary held.
+"Which markers count" in `reference/intake.md` makes them items, but the refusal stopped on
+a plain "Ready for review" from that person. Now a summary that lost every marker in its
+trailer, for example after a person's edit, becomes an item. The next run makes again the
+decisions that only that summary held.
 
 [#11]: https://github.com/prelint/review-agent/issues/11
 [#13]: https://github.com/prelint/review-agent/issues/13

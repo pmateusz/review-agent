@@ -298,7 +298,8 @@ Anything that fails these is not a parse failure. It is somebody else's text.
 The summary sentinel, `{"summary":true}`, restores no item and no finding. It sets
 `prior.sentinel`, and that is its whole job: it proves a `SELF` comment is the carrier
 written by this skill, including when every state marker was omitted because the state is
-recoverable or informational.
+recoverable or informational. A person who edits our summary can delete the sentinel by
+accident. If no other marker stays in the trailer, rule 3 makes that summary an item.
 
 **The trailer, not the last line.** A summary can carry the sentinel, actionable
 threadless items and non-fixed findings — a dozen markers on a busy PR — and only one can
@@ -381,7 +382,7 @@ carrying an unrecognised key is a marker from a version that knows more than thi
 halting on it would let any future addition stop every older copy still installed. This is
 what keeps the sentinel's shape free to grow.
 
-**Which cases are ours:**
+**What each case means:**
 
 - **No markers at all** is `source: "none"`. The PR predates them, or we have not posted
   here. Treat it as a first review. Do not call it a parse bug.
@@ -389,10 +390,6 @@ what keeps the sentinel's shape free to grow.
 - **`unparsed` non-empty** is a parse bug. Stop and say so — see "Refusing to run". A run
   that silently degrades to a cold start re-does every fix and re-replies in every thread,
   and the one record of why dies with the gitignored ledger.
-
-`prior.sentinel` true with zero carried findings is not a parse bug. That is the state the
-summary is allowed to be in when every finding was fixed and every threadless item was
-informational.
 
 ### The legacy marker
 
@@ -790,8 +787,6 @@ Stop and say so when:
 - `gh` is unauthenticated, or the repo has no PR.
 - **The previous-run load found markers it could not read** — `prior.unparsed` non-empty.
   Proceeding turns a parse bug into a cold start that re-does every fix and re-replies in
-  every thread, and says nothing. Zero carried findings with `prior.sentinel` true is not
-  this — it is the valid state where every finding was fixed and every threadless item
-  informational.
+  every thread, and says nothing.
 
 Do not invent work to justify the run.
