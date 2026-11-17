@@ -137,7 +137,7 @@ characters on them before a single visible character.
 |---|---|---|
 | The marker on a `fixed` finding | carried the ending across runs so the finding was not re-found | the `Finding: <specialist>/<fingerprint>` commit trailer, read by key and compared whole |
 | The marker on an all-informational threadless item | carried the classification across runs | nothing — the item is reclassified from scratch, which costs one verification pass and cannot lose a fix, rebuttal or deferral, since none of those is informational |
-| "Zero findings carried while one of our summary comments exists" as a refusal | caught a summary whose markers we failed to read | `prior.sentinel`, whose absence on a `SELF` top-level comment is itself a refusal |
+| "Zero findings carried while one of our summary comments exists" as a refusal | caught a summary whose markers we failed to read | `prior.unparsed` for a marker that does not parse, and nothing for a marker the parser skips |
 | "Never the markers" in the cut order | kept the visible budget from eating durable state | nothing needs it — the visible cap no longer measures the trailer, so the cut order never reaches it |
 
 **The substring hazard is closed, and it took two passes.** Row one made the commit
@@ -165,6 +165,14 @@ finding still can be. What remains is a mistake-catcher rather than a boundary, 
 the same conclusion `SKILL.md` reaches about its stacked-commit gate. The gap predates
 this change — it is recorded here because dropping row one left nothing else to contradict
 a forged trailer.
+
+**Nothing replaces the sentinel refusal.** It stopped a run when a `SELF` top-level comment
+existed and no sentinel parsed, to catch a summary whose markers the parser skipped. The
+skill authenticates as a user, so the comments of the token owner are `SELF` too. Rule 3 of
+"Which markers count" in `reference/intake.md` makes them items, but the refusal stopped on
+a plain "Ready for review" from that person. Now a summary that lost every marker in its
+trailer, for example after a person's edit, becomes an item. The next run makes again the
+decisions that only that summary held.
 
 [#11]: https://github.com/prelint/review-agent/issues/11
 [#13]: https://github.com/prelint/review-agent/issues/13
