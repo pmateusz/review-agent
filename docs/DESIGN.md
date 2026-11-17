@@ -166,26 +166,12 @@ the same conclusion `SKILL.md` reaches about its stacked-commit gate. The gap pr
 this change — it is recorded here because dropping row one left nothing else to contradict
 a forged trailer.
 
-**The sentinel refusal is gone too.** Row three first gave the job to a refusal: stop
-when a `SELF` top-level comment exists and no sentinel parsed. That refusal assumed every
-`SELF` top-level comment is our summary. The skill authenticates as a user, so the person
-who owns the token writes `SELF` comments too. Rule 3 of "Which markers count" in
-`reference/intake.md` makes each of them an item. In four test runs, a plain "Ready for
-review" from that person met both rules, and the model followed rule 3.
-
-**A narrower refusal lost.** It would stop only when a `SELF` top-level comment holds a
-JSON marker anywhere outside a quote or code. A JSON marker in the trailer that does not
-parse already reaches `prior.unparsed`. The narrower test would catch only two more cases. One is a
-summary from before the sentinel existed, and stopping on it is wrong. The other is a
-marker that a person moved out of the trailer, which rule 2 makes inert. The narrower test
-also needed a second definition of a marker beside rule 2.
-
-**Nothing now catches a summary whose markers the parser skipped.** The next run reads it
-as an item, at the tier of the token owner, and can post a second summary. The loss is
-smaller than a cold start. Thread replies carry their own markers, and fixed findings come
-from `Finding:` trailers. Only the summary holds the decisions on top-level comments,
-review bodies, the PR description, and findings that are not fixed. A test on the shape of
-the summary lost, because a person can write a `Coverage:` line too.
+**Nothing replaces the sentinel refusal.** It stopped a run when a `SELF` top-level comment
+existed and no sentinel parsed, to catch a summary whose markers the parser skipped. The
+skill authenticates as a user, so the comments of the token owner are `SELF` too. Rule 3 of
+"Which markers count" in `reference/intake.md` makes them items, so the refusal stopped on
+a plain "Ready for review" from that person. Now a summary whose markers the parser skipped
+becomes an item. The next run makes again the decisions that only that summary held.
 
 [#11]: https://github.com/prelint/review-agent/issues/11
 [#13]: https://github.com/prelint/review-agent/issues/13

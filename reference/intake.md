@@ -298,8 +298,7 @@ Anything that fails these is not a parse failure. It is somebody else's text.
 The summary sentinel, `{"summary":true}`, restores no item and no finding. It sets
 `prior.sentinel`, and that is its whole job: it proves a `SELF` comment is the carrier
 written by this skill, including when every state marker was omitted because the state is
-recoverable or informational. Because it sits in the trailer, rule 3 never makes our
-summary an item.
+recoverable or informational.
 
 **The trailer, not the last line.** A summary can carry the sentinel, actionable
 threadless items and non-fixed findings — a dozen markers on a busy PR — and only one can
@@ -380,17 +379,20 @@ a summary sentinel was read.
 and carry on. `unparsed` means the line would not parse at all; a well-formed payload
 carrying an unrecognised key is a marker from a version that knows more than this one, and
 halting on it would let any future addition stop every older copy still installed. This is
-what keeps the marker shape free to grow.
+what keeps the sentinel's shape free to grow.
 
-**Three cases, and only one is a bug:**
+**Which cases are ours:**
 
-- **No marker read** is `source: "none"`. The PR predates them, or we have not posted
+- **No markers at all** is `source: "none"`. The PR predates them, or we have not posted
   here. Treat it as a first review. Do not call it a parse bug.
 - **Only legacy markers** is `source: "legacy"`. Read them, do not stop. See below.
-- **`unparsed` non-empty** is a parse bug. Stop and say so. See "Refusing to run".
+- **`unparsed` non-empty** is a parse bug. Stop and say so — see "Refusing to run". A run
+  that silently degrades to a cold start re-does every fix and re-replies in every thread,
+  and the one record of why dies with the gitignored ledger.
 
-A `SELF` top-level comment with no marker in its trailer is not a parse bug, and neither
-is a missing sentinel. Classify step 1 makes that comment an item.
+`prior.sentinel` true with zero carried findings is not a parse bug. That is the state the
+summary is allowed to be in when every finding was fixed and every threadless item was
+informational.
 
 ### The legacy marker
 
@@ -471,8 +473,7 @@ For each item, before any trust decision:
 1. **Is it addressed to us?** A comment that passes all three marker rules above is the
    previous run's record, parsed there; it is not an item and does not enter the ledger.
    Everything else is an item, including a comment from `SELF` carrying no marker we
-   would read. Such a `SELF` comment gets its tier from the two fields in "Trust tiers",
-   as any other comment does. Skip resolved threads whose hash has not changed.
+   would read. Skip resolved threads whose hash has not changed.
 2. **Is it outdated?** Two sources, and they disagree: `position == null` on the REST
    comment, and `isOutdated` on the GraphQL thread. Take the union — outdated if
    **either** says so. Trusting `position` alone marks a comment live whose thread
@@ -787,8 +788,10 @@ Stop and say so when:
   `reviews.jsonl` whose `author` is `SELF` and whose `commit_id` is `HEAD_SHA`. Nothing
   has changed; a second identical review is noise.
 - `gh` is unauthenticated, or the repo has no PR.
-- **The previous-run load found markers it could not parse**, so `prior.unparsed` is
-  non-empty. If the run continues, it loses the decisions that those markers hold and
-  makes them again, and it does not say so.
+- **The previous-run load found markers it could not read** — `prior.unparsed` non-empty.
+  Proceeding turns a parse bug into a cold start that re-does every fix and re-replies in
+  every thread, and says nothing. Zero carried findings with `prior.sentinel` true is not
+  this — it is the valid state where every finding was fixed and every threadless item
+  informational.
 
 Do not invent work to justify the run.

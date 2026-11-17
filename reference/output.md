@@ -645,8 +645,7 @@ Otherwise, one top-level comment. Hard caps:
 - Every posted summary carries one sentinel marker even when no state markers remain:
   `<!-- review-agent: {"summary":true} -->`. It identifies our carrier comment without
   pretending to restore an item or finding. **It is not optional.** If a summary has no
-  marker in its trailer, the next run reads it as a reviewer's item and answers it. That
-  run can also post a second summary.
+  marker in its trailer, the next run reads it as a reviewer's item.
 - **A status with a destination carries it.** `"status":"deferred","issue":42` and
   `"status":"dropped","why":"budget"` — one of `cap`, `budget`, `silence`, `dedupe`. An
   older marker reading `cap` where the visible limit did the cutting stays valid, and
